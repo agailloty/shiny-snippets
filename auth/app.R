@@ -3,7 +3,13 @@ library(shiny)
 ui <- navbarPage(
   id = "Navig",
   "Test app",
-  tabPanel("Accueil"),
+  tabPanel("Home",
+           fluidRow(
+             column(1, ""),
+             column(10,includeMarkdown("README.md")),
+             column(1, "")
+           )
+           ),
   tabPanel("Contribute", 
            uiOutput("LoggedUser"))
 )
@@ -12,8 +18,9 @@ Logged <- FALSE
 userData <- data.frame(
   username = c("user1", "user2"),
   password = c("1234", "0123"),
-  title = c("The App Admin", "A simple User"),
-  admin = c(TRUE, FALSE)
+  name = c("The App Admin", "A simple User"),
+  admin = c(TRUE, FALSE),
+  stringsAsFactors = FALSE
 )
 
 server <- function(input, output, session) {
@@ -25,17 +32,14 @@ server <- function(input, output, session) {
     # from the user data
     trueCredentials <- paste0(userData$username, userData$password)
     # Do the same for the user input
-    
-    isolate({
-      userInput <- paste0(username, passwd)
-    })
+    userInput <- paste0(username, passwd)
     
     # Check if user exists 
     if (userInput %in% trueCredentials) {
       # Filter out the user data
-      userInfo <<- subset(userData, paste0(username, password) == userInput)
+      userInfo <- subset(userData, paste0(username, password) == userInput)
       User["exists"] = TRUE
-      User["title"] = userInfo$title
+      User["title"] = userInfo$name
       
       if (User$exists & userInfo$admin) {
         User["isAdmin"] = TRUE
@@ -82,7 +86,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$submitLogin, {
-    user <<- userLogin(input$username, input$userpasswd, userData)
+    user <- userLogin(input$username, input$userpasswd, userData)
     if (user$exists) {
       Logged <- TRUE
       print(user)
